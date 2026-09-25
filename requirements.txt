@@ -1,0 +1,9 @@
+# SDK officiel Anthropic — pour appeler l'API Claude
+anthropic
+
+# Charge les variables du fichier .env (dont la clé API)
+python-dotenv
+
+# Note : versions non figées pour la V0 (installe les dernières).
+# Plus tard, on pourra les figer avec `pip freeze > requirements.txt`
+# pour garantir une installation reproductible.
