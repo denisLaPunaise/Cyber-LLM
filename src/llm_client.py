@@ -41,6 +41,12 @@ def ask(system_prompt: str, user_message: str) -> str:
             model=config.MODEL,
             max_tokens=config.MAX_TOKENS,
             system=system_prompt,
+            # Réflexion interne « adaptive » : le modèle décide quand/combien
+            # réfléchir. Sur Opus 4.8 elle est désactivée par défaut ; on
+            # l'active ici pour de meilleures pistes (non affichée à l'écran).
+            thinking={"type": "adaptive"},
+            # Niveau d'effort (profondeur de raisonnement / dépense de tokens).
+            output_config={"effort": config.EFFORT},
             messages=[{"role": "user", "content": user_message}],
         )
     except anthropic.AuthenticationError:
@@ -56,7 +62,7 @@ def ask(system_prompt: str, user_message: str) -> str:
             "Vérifie et corrige CYBER_LLM_MODEL dans ton .env."
         )
     except anthropic.BadRequestError as e:
-        # 400 = la requête elle-même pose problème (souvent le modèle ou le workspace).
+        # 400 = la requête elle-même pose problème (modèle, workspace, effort...).
         # On affiche le message exact renvoyé par l'API pour pouvoir diagnostiquer.
         return f"⚠️ Requête refusée par l'API (400) : {e.message}"
     except anthropic.RateLimitError:
@@ -82,7 +88,7 @@ def ask(system_prompt: str, user_message: str) -> str:
             "ou passe à une autre étape."
         )
 
-    # Cas normal : response.content est une liste de blocs.
-    # On assemble le texte des blocs de type « text ».
+    # Cas normal : response.content est une liste de blocs (réflexion + texte).
+    # On assemble uniquement le texte des blocs de type « text ».
     morceaux = [bloc.text for bloc in response.content if bloc.type == "text"]
     return "\n".join(morceaux).strip()

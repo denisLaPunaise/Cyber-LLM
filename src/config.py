@@ -1,7 +1,7 @@
 """Configuration de Cyber-LLM.
 
 Charge les variables du fichier .env et expose les réglages du projet
-(modèle utilisé, longueur max de réponse, workspace) au reste du code.
+(modèle, effort de raisonnement, workspace, longueur max) au reste du code.
 """
 
 import os
@@ -18,13 +18,17 @@ MODEL = os.getenv("CYBER_LLM_MODEL", "").strip()
 
 # (Optionnel) ID du workspace Anthropic (format wrkspc_...).
 # Utile UNIQUEMENT si ta clé API n'est pas déjà rattachée à un workspace.
-# Laisse vide sinon.
 WORKSPACE_ID = os.getenv("ANTHROPIC_WORKSPACE_ID", "").strip()
 
-# Plafond de longueur de la réponse. Ce n'est PAS une consommation garantie :
-# on ne paie que les tokens réellement générés. 4096 suffit pour des conseils
-# concis ; à augmenter si jamais des réponses se retrouvaient coupées.
-MAX_TOKENS = 4096
+# Effort de raisonnement : "low", "medium", "high", "xhigh", "max".
+# Plus élevé = réflexion plus poussée (meilleure qualité) mais plus de tokens.
+# "high" est un bon compromis par défaut.
+EFFORT = os.getenv("CYBER_LLM_EFFORT", "high").strip()
+
+# Plafond de longueur de la réponse (la réflexion interne + le texte final
+# comptent dedans). Généreux pour ne pas couper une réponse ; on ne paie que
+# les tokens réellement générés.
+MAX_TOKENS = 16000
 
 
 def check_config() -> None:
