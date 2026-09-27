@@ -1,7 +1,7 @@
 """Configuration de Cyber-LLM.
 
 Charge les variables du fichier .env et expose les réglages du projet
-(modèle utilisé, longueur max de réponse) au reste du code.
+(modèle utilisé, longueur max de réponse, workspace) au reste du code.
 """
 
 import os
@@ -15,6 +15,11 @@ load_dotenv()
 # Modèle Claude à utiliser. On le lit depuis le .env — bonne pratique :
 # la configuration vit dans .env, pas « en dur » dans le code.
 MODEL = os.getenv("CYBER_LLM_MODEL", "").strip()
+
+# (Optionnel) ID du workspace Anthropic (format wrkspc_...).
+# Utile UNIQUEMENT si ta clé API n'est pas déjà rattachée à un workspace.
+# Laisse vide sinon.
+WORKSPACE_ID = os.getenv("ANTHROPIC_WORKSPACE_ID", "").strip()
 
 # Plafond de longueur de la réponse. Ce n'est PAS une consommation garantie :
 # on ne paie que les tokens réellement générés. 4096 suffit pour des conseils

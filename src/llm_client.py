@@ -16,9 +16,14 @@ _client = None
 def _get_client() -> anthropic.Anthropic:
     global _client
     if _client is None:
+        headers = {}
+        # Si un workspace est précisé dans .env, on l'ajoute en en-tête.
+        # Nécessaire quand la clé API n'est pas déjà rattachée à un workspace.
+        if config.WORKSPACE_ID:
+            headers["anthropic-workspace-id"] = config.WORKSPACE_ID
         # Anthropic() lit automatiquement ANTHROPIC_API_KEY dans l'environnement
         # (variable chargée depuis .env par config.py).
-        _client = anthropic.Anthropic()
+        _client = anthropic.Anthropic(default_headers=headers)
     return _client
 
 
@@ -51,7 +56,7 @@ def ask(system_prompt: str, user_message: str) -> str:
             "Vérifie et corrige CYBER_LLM_MODEL dans ton .env."
         )
     except anthropic.BadRequestError as e:
-        # 400 = la requête elle-même pose problème (souvent le modèle).
+        # 400 = la requête elle-même pose problème (souvent le modèle ou le workspace).
         # On affiche le message exact renvoyé par l'API pour pouvoir diagnostiquer.
         return f"⚠️ Requête refusée par l'API (400) : {e.message}"
     except anthropic.RateLimitError:
