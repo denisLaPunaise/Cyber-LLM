@@ -7,7 +7,8 @@ les étapes suivantes en s'appuyant sur la méthodologie de pentest.
 **Ce n'est pas un outil qui attaque tout seul.** C'est un copilote : tu gardes
 toujours la décision et tu exécutes toi-même les commandes.
 
-> 🚧 **Statut : V0 en construction.** Les fondations sont posées ; la CLI arrive.
+> ✅ **Statut : V0 fonctionnelle.** Colle une sortie de commande → reçois des
+> pistes priorisées avec les commandes.
 
 ---
 
@@ -36,12 +37,10 @@ Trois briques :
 
 1. **Un LLM déjà entraîné** (API Claude d'Anthropic) — aucun modèle n'est
    entraîné ; on oriente un modèle existant par du texte.
-2. **Un prompt système** = la méthodologie de pentest (le « cerveau »).
+2. **Un prompt système** = la méthodologie de pentest (le « cerveau »,
+   dans `prompts/system_pentest.md`).
 3. **Une boucle d'interaction** : tu colles une sortie → l'assistant analyse
    et propose des pistes priorisées avec les commandes.
-
-Le modèle Claude utilisé est **configurable** dans `.env`
-(variable `CYBER_LLM_MODEL`).
 
 ---
 
@@ -85,22 +84,34 @@ Quand l'environnement est actif, l'invite affiche `(.venv)` au début de la lign
 
 ---
 
-## Utilisation
+## Configuration (`.env`)
 
-> 🚧 Disponible à la prochaine étape de la V0.
+| Variable | Rôle | Défaut |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Ta clé API Anthropic | — (obligatoire) |
+| `CYBER_LLM_MODEL` | Modèle Claude utilisé | `claude-opus-4-8` |
+| `CYBER_LLM_EFFORT` | Effort de raisonnement (`low`→`max`) | `high` |
+| `ANTHROPIC_WORKSPACE_ID` | Workspace (si la clé n'y est pas rattachée) | *(vide)* |
+
+> Note : Opus 4.8 est recommandé — Opus 5 / 5.5 refusent souvent le contenu
+> sécurité de labs (classifieur de sûreté « cyber » plus strict).
+
+---
+
+## Utilisation
 
 ```bash
 python -m src.cli
 ```
 
-Puis colle une sortie de commande (ex. un scan `nmap`) et laisse l'assistant
-te proposer les étapes suivantes.
+Colle une sortie de commande (ex. un scan `nmap`), tape `END` sur une ligne
+seule, et l'assistant te propose les étapes suivantes. Tape `quit` pour sortir.
 
 ---
 
 ## Roadmap
 
-- **V0** *(en cours)* — CLI : coller une sortie → recevoir des pistes. Zéro autonomie.
+- **V0** ✅ *(terminée)* — CLI : coller une sortie → recevoir des pistes. Zéro autonomie.
 - **V1** — mémoire de session (état de la machine en cours).
 - **V2** — exécution assistée de commandes en lecture seule, avec validation humaine.
 
