@@ -40,12 +40,28 @@ def ask(system_prompt: str, user_message: str) -> str:
         )
     except anthropic.AuthenticationError:
         return "❌ Clé API invalide. Vérifie ANTHROPIC_API_KEY dans ton fichier .env."
+    except anthropic.PermissionDeniedError:
+        return (
+            "🚫 Ta clé n'a pas accès à cette ressource — le modèle "
+            f"« {config.MODEL} » n'est peut-être pas activé sur ton compte."
+        )
+    except anthropic.NotFoundError:
+        return (
+            f"🔎 Modèle introuvable : « {config.MODEL} ». "
+            "Vérifie et corrige CYBER_LLM_MODEL dans ton .env."
+        )
+    except anthropic.BadRequestError as e:
+        # 400 = la requête elle-même pose problème (souvent le modèle).
+        # On affiche le message exact renvoyé par l'API pour pouvoir diagnostiquer.
+        return f"⚠️ Requête refusée par l'API (400) : {e.message}"
     except anthropic.RateLimitError:
         return "⏳ Trop de requêtes d'un coup. Patiente quelques secondes et réessaie."
     except anthropic.APIConnectionError:
         return "🌐 Problème de connexion. Vérifie ta connexion internet."
     except anthropic.APIStatusError as e:
-        return f"⚠️ Erreur de l'API (code {e.status_code}). Réessaie plus tard."
+        if e.status_code >= 500:
+            return f"⚠️ Erreur serveur de l'API (code {e.status_code}). Réessaie dans un moment."
+        return f"⚠️ Erreur de l'API (code {e.status_code}) : {e.message}"
 
     # Le modèle peut décliner une requête (classifieur de sûreté, ex. « cyber »).
     # On le gère proprement au lieu de renvoyer une réponse vide.
