@@ -54,18 +54,34 @@ Le modèle Claude utilisé est **configurable** dans `.env`
 
 ## Installation
 
-```bash
+### Windows (PowerShell)
+
+```powershell
 # 1. Créer et activer un environnement virtuel
-python3 -m venv .venv
-source .venv/bin/activate         # Windows : .venv\Scripts\activate
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+# Si l'activation est bloquée (« l'exécution de scripts est désactivée »),
+# lance UNE fois la commande suivante, puis réessaie l'activation :
+#   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 
 # 2. Installer les dépendances
 pip install -r requirements.txt
 
 # 3. Configurer la clé API
-cp .env.example .env
+copy .env.example .env
 # puis édite .env et colle ta vraie clé (le .env n'est jamais commité)
 ```
+
+### Linux / macOS
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+```
+
+Quand l'environnement est actif, l'invite affiche `(.venv)` au début de la ligne.
 
 ---
 
