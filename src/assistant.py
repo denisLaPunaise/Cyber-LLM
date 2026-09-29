@@ -39,6 +39,17 @@ def analyser(entree_utilisateur: str, memoire: Memoire, fiche: Fiche) -> str:
     system_prompt = load_system_prompt()
     message = _CONTEXTE + entree_utilisateur + "\n----- FIN DE LA SORTIE -----"
 
+    # Reprise de session : si on démarre avec une fiche chargée mais sans
+    # historique (après « charger »), on rappelle l'état connu au modèle une
+    # première fois pour qu'il reparte de là.
+    if memoire.est_vide() and not fiche.est_vide():
+        message = (
+            "Reprise de session — état déjà connu de la machine :\n"
+            + fiche.contenu
+            + "\n\n"
+            + message
+        )
+
     # Tout l'historique + le nouveau message, sans encore toucher à la mémoire.
     messages = memoire.historique() + [{"role": "user", "content": message}]
     reponse = llm_client.ask(system_prompt, messages)
