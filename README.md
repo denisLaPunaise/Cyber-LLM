@@ -124,8 +124,12 @@ pas besoin de tout recoller à chaque message.
 
 - **V0** ✅ *(terminée)* — CLI : coller une sortie → recevoir des pistes. Zéro autonomie.
 - **V1** ✅ *(terminée)* — mémoire de session : l'assistant retient l'historique
-  de la machine en cours et raisonne de façon cumulative.
-- **V2** — exécution assistée de commandes en lecture seule, avec validation humaine.
+  de la machine en cours et raisonne de façon cumulative. Les requêtes utilisent
+  le *prompt caching* d'Anthropic pour réduire les coûts (début de conversation
+  relu depuis le cache, facturé ~10 %).
+- **V2** — fiche machine : état structuré de la box (IP, ports, services,
+  identifiants, shell) pour la vue d'ensemble et la reprise de session.
+- **V3** — exécution assistée de commandes en lecture seule, avec validation humaine.
 
 Plan détaillé de la V0 : [`docs/plan-v0.md`](docs/plan-v0.md).
 
