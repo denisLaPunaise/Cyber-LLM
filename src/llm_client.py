@@ -43,6 +43,33 @@ def _get_client() -> anthropic.Anthropic:
     return _client
 
 
+def _preparer_messages_avec_cache(messages: list[dict]) -> list[dict]:
+    """Ajoute un point de cache sur le DERNIER message envoyé.
+
+    Effet : au tour suivant, tout le début identique de la conversation
+    (prompt système + messages précédents) est relu depuis le cache d'Anthropic,
+    facturé ~10 % du prix normal, au lieu d'être recalculé à chaque fois.
+
+    On ne touche pas à la mémoire : on renvoie une copie où seul le dernier
+    message est réécrit au format « bloc » (le seul qui accepte cache_control).
+    """
+    if not messages:
+        return messages
+    prepares = list(messages)  # copie : on ne modifie pas la liste d'origine
+    dernier = prepares[-1]
+    prepares[-1] = {
+        "role": dernier["role"],
+        "content": [
+            {
+                "type": "text",
+                "text": dernier["content"],
+                "cache_control": {"type": "ephemeral"},
+            }
+        ],
+    }
+    return prepares
+
+
 def ask(system_prompt: str, messages: list[dict]) -> Reponse:
     """Envoie une requête à Claude et renvoie une Reponse (texte + succès).
 
@@ -58,15 +85,24 @@ def ask(system_prompt: str, messages: list[dict]) -> Reponse:
         response = client.messages.create(
             model=config.MODEL,
             max_tokens=config.MAX_TOKENS,
-            system=system_prompt,
+            # Le prompt système est stable d'un tour à l'autre : on le marque
+            # pour le cache (relu ~10 % du prix au lieu d'être recalculé).
+            system=[
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
             # Réflexion interne « adaptive » : le modèle décide quand/combien
             # réfléchir. Sur Opus 4.8 elle est désactivée par défaut ; on
             # l'active ici pour de meilleures pistes (non affichée à l'écran).
             thinking={"type": "adaptive"},
             # Niveau d'effort (profondeur de raisonnement / dépense de tokens).
             output_config={"effort": config.EFFORT},
-            # On envoie l'historique complet, plus un seul message (V1).
-            messages=messages,
+            # On envoie l'historique complet (V1), avec un point de cache sur
+            # le dernier message pour relire tout le début depuis le cache.
+            messages=_preparer_messages_avec_cache(messages),
         )
     except anthropic.AuthenticationError:
         return Reponse("❌ Clé API invalide. Vérifie ANTHROPIC_API_KEY dans ton fichier .env.", False)
