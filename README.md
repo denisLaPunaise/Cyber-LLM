@@ -7,8 +7,9 @@ les étapes suivantes en s'appuyant sur la méthodologie de pentest.
 **Ce n'est pas un outil qui attaque tout seul.** C'est un copilote : tu gardes
 toujours la décision et tu exécutes toi-même les commandes.
 
-> ✅ **Statut : V0 fonctionnelle.** Colle une sortie de commande → reçois des
-> pistes priorisées avec les commandes.
+> ✅ **Statut : V1 fonctionnelle.** Colle une sortie de commande → reçois des
+> pistes priorisées avec les commandes. L'assistant **se souvient** de la
+> machine en cours pendant toute la session.
 
 ---
 
@@ -24,7 +25,7 @@ Règles intégrées au projet :
 
 - ✅ **Validation humaine obligatoire** avant toute action offensive.
 - ✅ **Rien de destructif** en automatique.
-- ✅ L'assistant **propose**, il **n'exécute pas** à ta place (en V0).
+- ✅ L'assistant **propose**, il **n'exécute pas** à ta place (pour l'instant).
 
 L'utilisation contre des systèmes sans autorisation est illégale et sort
 totalement du cadre de ce projet.
@@ -41,6 +42,10 @@ Trois briques :
    dans `prompts/system_pentest.md`).
 3. **Une boucle d'interaction** : tu colles une sortie → l'assistant analyse
    et propose des pistes priorisées avec les commandes.
+
+Depuis la **V1**, l'assistant garde en mémoire l'historique de la session :
+il se souvient des ports, services et identifiants déjà trouvés, et raisonne
+de façon cumulative au lieu de repartir de zéro à chaque message.
 
 ---
 
@@ -105,14 +110,21 @@ python -m src.cli
 ```
 
 Colle une sortie de commande (ex. un scan `nmap`), tape `END` sur une ligne
-seule, et l'assistant te propose les étapes suivantes. Tape `quit` pour sortir.
+seule, et l'assistant te propose les étapes suivantes.
+
+L'assistant **se souvient** de tout ce que tu as collé pendant la session :
+pas besoin de tout recoller à chaque message.
+
+- `nouvelle` — efface la mémoire pour repartir de zéro (nouvelle machine).
+- `quit` — quitter.
 
 ---
 
 ## Roadmap
 
 - **V0** ✅ *(terminée)* — CLI : coller une sortie → recevoir des pistes. Zéro autonomie.
-- **V1** — mémoire de session (état de la machine en cours).
+- **V1** ✅ *(terminée)* — mémoire de session : l'assistant retient l'historique
+  de la machine en cours et raisonne de façon cumulative.
 - **V2** — exécution assistée de commandes en lecture seule, avec validation humaine.
 
 Plan détaillé de la V0 : [`docs/plan-v0.md`](docs/plan-v0.md).
