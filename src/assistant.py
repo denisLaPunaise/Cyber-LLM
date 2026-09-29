@@ -4,6 +4,7 @@ from pathlib import Path
 
 from . import llm_client
 from .memoire import Memoire
+from .fiche import Fiche, separer
 
 # Chemin vers le prompt système (le « cerveau » méthodo), à la racine du projet.
 _PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "system_pentest.md"
@@ -29,8 +30,8 @@ def load_system_prompt() -> str:
     return _PROMPT_PATH.read_text(encoding="utf-8")
 
 
-def analyser(entree_utilisateur: str, memoire: Memoire) -> str:
-    """Interroge le LLM en tenant compte de toute la session (V1).
+def analyser(entree_utilisateur: str, memoire: Memoire, fiche: Fiche) -> str:
+    """Interroge le LLM avec toute la session (V1) et met à jour la fiche (V2).
 
     On recharge le prompt à chaque appel : tu peux l'éditer et voir l'effet
     immédiatement, sans relancer le programme.
@@ -38,18 +39,22 @@ def analyser(entree_utilisateur: str, memoire: Memoire) -> str:
     system_prompt = load_system_prompt()
     message = _CONTEXTE + entree_utilisateur + "\n----- FIN DE LA SORTIE -----"
 
-    # On prépare la liste à envoyer = tout l'historique + le nouveau message,
-    # SANS toucher encore à la mémoire (concaténation = nouvelle liste).
+    # Tout l'historique + le nouveau message, sans encore toucher à la mémoire.
     messages = memoire.historique() + [{"role": "user", "content": message}]
     reponse = llm_client.ask(system_prompt, messages)
 
-    # On ne mémorise QUE si l'échange a réussi. Pourquoi ? L'API exige que les
-    # rôles ALTERNENT (user → assistant → user...). Si on gardait un message
-    # utilisateur sans réponse valable (erreur / refus), le tour suivant ferait
-    # deux « user » de suite → l'API planterait. Donc : on enregistre la paire
-    # (question + réponse) ensemble, ou rien.
-    if reponse.succes:
-        memoire.ajouter_utilisateur(message)
-        memoire.ajouter_assistant(reponse.texte)
+    if not reponse.succes:
+        # Erreur ou refus : on affiche le message tel quel, rien n'est mémorisé.
+        return reponse.texte
 
-    return reponse.texte
+    # Succès : on mémorise l'échange COMPLET (bloc fiche inclus) pour que le
+    # modèle garde sa fiche en tête d'un tour à l'autre.
+    memoire.ajouter_utilisateur(message)
+    memoire.ajouter_assistant(reponse.texte)
+
+    # On isole le bloc [FICHE MACHINE] : il alimente la fiche mais n'est PAS
+    # affiché avec la réponse (consultable via la commande `fiche`).
+    visible, fiche_txt = separer(reponse.texte)
+    if fiche_txt:
+        fiche.mettre_a_jour(fiche_txt)
+    return visible

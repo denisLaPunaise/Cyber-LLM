@@ -7,6 +7,7 @@ import sys
 
 from . import assistant, config
 from .memoire import Memoire
+from .fiche import Fiche
 
 # S'assure que l'affichage gère accents et emojis quel que soit le terminal.
 try:
@@ -17,13 +18,14 @@ except Exception:
 
 BANNIERE = """
 ============================================================
-  Cyber-LLM — Copilote de pentest (V1)
+  Cyber-LLM — Copilote de pentest (V2)
 ------------------------------------------------------------
   [!] Labs AUTORISES uniquement (TryHackMe, HackTheBox...).
   Tu gardes la decision : l'assistant PROPOSE, tu executes.
   Rien de destructif en automatique.
-  [Memoire] Il se souvient de la machine en cours.
-            Tape 'nouvelle' pour repartir de zero.
+  [Memoire]  Il se souvient de la machine en cours.
+  [Fiche]    'fiche' -> etat de la box (IP, ports, acces...).
+             'nouvelle' -> repartir de zero.
 ============================================================
 """
 
@@ -31,12 +33,13 @@ BANNIERE = """
 def lire_entree() -> str:
     """Lit une entrée multi-lignes jusqu'à une ligne contenant seulement END.
 
-    Renvoie '__quit__' pour quitter, '__reset__' pour effacer la mémoire.
+    Renvoie '__quit__' (quitter), '__reset__' (nouvelle machine),
+    '__fiche__' (afficher la fiche).
     """
     print("\n" + "-" * 60)
     print("Colle ta sortie (nmap, curl, ...) ou ta question.")
     print("Puis tape END sur une ligne seule pour envoyer.")
-    print("('quit' pour sortir  |  'nouvelle' pour changer de machine)")
+    print("('quit' quitter  |  'nouvelle' changer de machine  |  'fiche' voir l'etat)")
     lignes = []
     while True:
         try:
@@ -49,6 +52,8 @@ def lire_entree() -> str:
             return "__quit__"
         if commande in ("nouvelle", "reset", "clear") and not lignes:
             return "__reset__"
+        if commande in ("fiche", "etat", "état") and not lignes:
+            return "__fiche__"
         if ligne.strip() == "END":
             break
         lignes.append(ligne)
@@ -65,8 +70,9 @@ def main() -> None:
         print(f"❌ Configuration : {e}")
         return
 
-    # UNE seule mémoire pour toute la session : elle accumule les échanges.
+    # Un état par session : la mémoire (historique) et la fiche machine.
     memoire = Memoire()
+    fiche = Fiche()
 
     while True:
         entree = lire_entree()
@@ -75,13 +81,21 @@ def main() -> None:
             return
         if entree == "__reset__":
             memoire.vider()
-            print("\n🧹 Mémoire effacée — nouvelle machine, on repart de zéro.")
+            fiche.vider()
+            print("\n🧹 Mémoire et fiche effacées — nouvelle machine, on repart de zéro.")
+            continue
+        if entree == "__fiche__":
+            if fiche.est_vide():
+                print("\n📋 Fiche machine : (vide — lance une première analyse pour la remplir)")
+            else:
+                print("\n📋 Fiche machine :\n")
+                print(fiche.contenu)
             continue
         if not entree:
             print("(rien à analyser)")
             continue
         print("\n⏳ Analyse en cours...\n")
-        print(assistant.analyser(entree, memoire))
+        print(assistant.analyser(entree, memoire, fiche))
 
 
 if __name__ == "__main__":
