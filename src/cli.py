@@ -6,6 +6,7 @@ Lancement :  python -m src.cli
 import sys
 
 from . import assistant, config
+from .memoire import Memoire
 
 # S'assure que l'affichage gère accents et emojis quel que soit le terminal.
 try:
@@ -16,11 +17,13 @@ except Exception:
 
 BANNIERE = """
 ============================================================
-  Cyber-LLM — Copilote de pentest (V0)
+  Cyber-LLM — Copilote de pentest (V1)
 ------------------------------------------------------------
   [!] Labs AUTORISES uniquement (TryHackMe, HackTheBox...).
   Tu gardes la decision : l'assistant PROPOSE, tu executes.
   Rien de destructif en automatique.
+  [Memoire] Il se souvient de la machine en cours.
+            Tape 'nouvelle' pour repartir de zero.
 ============================================================
 """
 
@@ -28,11 +31,12 @@ BANNIERE = """
 def lire_entree() -> str:
     """Lit une entrée multi-lignes jusqu'à une ligne contenant seulement END.
 
-    Renvoie '__quit__' si l'utilisateur demande à quitter.
+    Renvoie '__quit__' pour quitter, '__reset__' pour effacer la mémoire.
     """
     print("\n" + "-" * 60)
     print("Colle ta sortie (nmap, curl, ...) ou ta question.")
-    print("Puis tape END sur une ligne seule pour envoyer.  ('quit' pour sortir)")
+    print("Puis tape END sur une ligne seule pour envoyer.")
+    print("('quit' pour sortir  |  'nouvelle' pour changer de machine)")
     lignes = []
     while True:
         try:
@@ -40,8 +44,11 @@ def lire_entree() -> str:
         except EOFError:  # Ctrl-Z puis Entrée (Windows) / Ctrl-D (Linux)
             return "__quit__"
         commande = ligne.strip().lower()
+        # Ces commandes ne valent que tapées seules, avant tout contenu collé.
         if commande in ("quit", "exit") and not lignes:
             return "__quit__"
+        if commande in ("nouvelle", "reset", "clear") and not lignes:
+            return "__reset__"
         if ligne.strip() == "END":
             break
         lignes.append(ligne)
@@ -58,16 +65,23 @@ def main() -> None:
         print(f"❌ Configuration : {e}")
         return
 
+    # UNE seule mémoire pour toute la session : elle accumule les échanges.
+    memoire = Memoire()
+
     while True:
         entree = lire_entree()
         if entree == "__quit__":
             print("\nÀ bientôt, et bon hack (légal) ! 👋")
             return
+        if entree == "__reset__":
+            memoire.vider()
+            print("\n🧹 Mémoire effacée — nouvelle machine, on repart de zéro.")
+            continue
         if not entree:
             print("(rien à analyser)")
             continue
         print("\n⏳ Analyse en cours...\n")
-        print(assistant.analyser(entree))
+        print(assistant.analyser(entree, memoire))
 
 
 if __name__ == "__main__":
