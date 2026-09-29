@@ -117,8 +117,13 @@ pas besoin de tout recoller à chaque message. Il tient aussi une **fiche
 machine** à jour (IP, ports, services, identifiants, accès).
 
 - `fiche` — affiche l'état structuré de la machine à tout moment.
+- `sauver [nom]` — sauvegarde la fiche (ex. `sauver blue`).
+- `charger [nom]` — recharge une fiche sauvegardée pour reprendre une box.
 - `nouvelle` — efface la mémoire et la fiche pour repartir de zéro.
+- `help` — affiche l'aide et la liste des commandes.
 - `quit` — quitter.
+
+Les fiches sauvegardées vont dans le dossier `sessions/` (ignoré par git).
 
 ---
 
@@ -129,10 +134,10 @@ machine** à jour (IP, ports, services, identifiants, accès).
   de la machine en cours et raisonne de façon cumulative. Les requêtes utilisent
   le *prompt caching* d'Anthropic pour réduire les coûts (début de conversation
   relu depuis le cache, facturé ~10 %).
-- **V2** *(en cours)* — fiche machine : état structuré de la box (IP, ports,
+- **V2** ✅ *(terminée)* — fiche machine : état structuré de la box (IP, ports,
   services, identifiants, accès).
   - ✅ Étape 1 : l'assistant tient la fiche à jour, consultable via `fiche`.
-  - ⏳ Étape 2 : sauvegarde/chargement pour reprendre une box plus tard.
+  - ✅ Étape 2 : `sauver` / `charger` pour reprendre une box plus tard.
 - **V3** — exécution assistée de commandes en lecture seule, avec validation humaine.
 
 Plan détaillé de la V0 : [`docs/plan-v0.md`](docs/plan-v0.md).
