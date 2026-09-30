@@ -1,6 +1,6 @@
 # Feuille de route — prochaines étapes
 
-**Ordre convenu :** on fait **B → C → D**, dans cet ordre.
+**Ordre convenu :** B → C → D. **B est fait ✅** — prochaine étape : **C**, puis **D**.
 **A est reporté** : les réflexes de méthodologie seront ajoutés au prompt une
 fois le cours TryHackMe / eJPT terminé (quand les notes seront prêtes).
 
@@ -10,26 +10,19 @@ fois le cours TryHackMe / eJPT terminé (quand les notes seront prêtes).
 - **V0** — copilote de base : coller une sortie → pistes priorisées.
 - **V1** — mémoire de session + prompt caching.
 - **V2** — fiche machine + sauvegarde/chargement + commande `help`.
+- **B (tests)** — suite `pytest` (14 tests) : mémoire, fiche, assistant.
 
 ---
 
 ## ⏳ À faire, dans l'ordre
 
-### 1) B — Tests automatisés (`pytest`)
-Transformer les tests écrits à la main pendant le développement en une vraie
-suite `tests/` lancée par `pytest`.
-- Couvre : mémoire (alternance des rôles, stockage atomique), fiche (`separer`,
-  `sauver`/`charger`, nom de fichier sécurisé), caching (helper sans mutation),
-  reprise de session (réinjection de l'état).
-- But : rigueur d'ingénierie + non-régression (on modifie sans rien casser).
-
-### 2) C — Évaluation de la qualité des réponses (evals)
+### 1) C — Évaluation de la qualité des réponses (evals)
 Un petit banc d'essai qui **note** les réponses du copilote sur des cas types.
 - Vérifie : format respecté (`[ANALYSE]` / `[PISTES]` / `[AVANT D'AGIR]` /
   `[FICHE MACHINE]`), pistes pertinentes, aucune invention de résultat.
 - But : **mesurer la qualité de l'IA** — compétence clé pour l'axe IA × sécurité.
 
-### 3) D — V3 : exécution assistée en lecture seule
+### 2) D — V3 : exécution assistée en lecture seule
 Proposer une commande **non-destructive** puis, **après validation humaine
 explicite**, l'exécuter et réinjecter la sortie automatiquement.
 - À cadrer avec soin : liste blanche de commandes en lecture seule, validation à

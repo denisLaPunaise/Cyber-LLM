@@ -127,6 +127,19 @@ Les fiches sauvegardées vont dans le dossier `sessions/` (ignoré par git).
 
 ---
 
+## Tests
+
+Les tests vérifient automatiquement la « tuyauterie » du projet (mémoire, fiche,
+sauvegarde…). Ils **ne contactent jamais l'API** (l'appel LLM est simulé) : ils
+sont gratuits, instantanés et déterministes.
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+---
+
 ## Roadmap
 
 - **V0** ✅ *(terminée)* — CLI : coller une sortie → recevoir des pistes. Zéro autonomie.
