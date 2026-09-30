@@ -146,6 +146,24 @@ pytest
 
 ---
 
+## Évaluation de la qualité (evals)
+
+Les *evals* mesurent la **qualité des réponses de l'IA** (pas le code) : on lance
+le copilote sur des cas types et on note chaque réponse selon des critères
+(format respecté, faits clés repris, **rien de destructif**, réponse actionnable).
+
+Contrairement aux tests, les evals **appellent le vrai Claude** (quelques centimes
+par passage). À lancer quand on change le prompt ou le modèle :
+
+```bash
+python -m evals.run_eval
+```
+
+On obtient un score (ex. `15/15`) qui dit si un changement de prompt **améliore
+ou dégrade** le copilote.
+
+---
+
 ## Roadmap
 
 - **V0** ✅ *(terminée)* — CLI : coller une sortie → recevoir des pistes. Zéro autonomie.

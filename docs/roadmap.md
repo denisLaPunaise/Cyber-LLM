@@ -1,6 +1,6 @@
 # Feuille de route — prochaines étapes
 
-**Ordre convenu :** B → C → D. **B est fait ✅** — prochaine étape : **C**, puis **D**.
+**Ordre convenu :** B → C → D. **B et C faits ✅** — prochaine étape : **D**.
 **A est reporté** : les réflexes de méthodologie seront ajoutés au prompt une
 fois le cours TryHackMe / eJPT terminé (quand les notes seront prêtes).
 
@@ -10,19 +10,15 @@ fois le cours TryHackMe / eJPT terminé (quand les notes seront prêtes).
 - **V0** — copilote de base : coller une sortie → pistes priorisées.
 - **V1** — mémoire de session + prompt caching.
 - **V2** — fiche machine + sauvegarde/chargement + commande `help`.
-- **B (tests)** — suite `pytest` (14 tests) : mémoire, fiche, assistant.
+- **B (tests)** — suite `pytest` (19 tests) : mémoire, fiche, assistant, notation.
+- **C (evals)** — banc d'évaluation de la qualité : 4 cas types, critères
+  (format, ancrage, sécurité, actionnable), score global.
 
 ---
 
 ## ⏳ À faire, dans l'ordre
 
-### 1) C — Évaluation de la qualité des réponses (evals)
-Un petit banc d'essai qui **note** les réponses du copilote sur des cas types.
-- Vérifie : format respecté (`[ANALYSE]` / `[PISTES]` / `[AVANT D'AGIR]` /
-  `[FICHE MACHINE]`), pistes pertinentes, aucune invention de résultat.
-- But : **mesurer la qualité de l'IA** — compétence clé pour l'axe IA × sécurité.
-
-### 2) D — V3 : exécution assistée en lecture seule
+### 1) D — V3 : exécution assistée en lecture seule
 Proposer une commande **non-destructive** puis, **après validation humaine
 explicite**, l'exécuter et réinjecter la sortie automatiquement.
 - À cadrer avec soin : liste blanche de commandes en lecture seule, validation à
