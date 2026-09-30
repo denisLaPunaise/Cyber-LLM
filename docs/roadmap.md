@@ -10,9 +10,10 @@ fois le cours TryHackMe / eJPT terminé (quand les notes seront prêtes).
 - **V0** — copilote de base : coller une sortie → pistes priorisées.
 - **V1** — mémoire de session + prompt caching.
 - **V2** — fiche machine + sauvegarde/chargement + commande `help`.
-- **B (tests)** — suite `pytest` (19 tests) : mémoire, fiche, assistant, notation.
-- **C (evals)** — banc d'évaluation de la qualité : 4 cas types, critères
-  (format, ancrage, sécurité, actionnable), score global.
+- **B (tests)** — suite `pytest` (22 tests) : mémoire, fiche, assistant, notation, données.
+- **C (evals)** — banc d'évaluation de la qualité : 8 cas types (dev/test),
+  critères (format, ancrage, sécurité, actionnable), scores dev/test séparés.
+  *En cours de renforcement : LLM-juge + sauvegarde des réponses.*
 
 ---
 

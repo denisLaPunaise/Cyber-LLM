@@ -1,12 +1,15 @@
 """Lance le copilote sur chaque cas type, note les réponses, affiche un rapport.
 
 ⚠️  Ce script appelle le VRAI Claude (ta clé API) → il coûte quelques centimes
-    par passage. À lancer quand on change le prompt ou le modèle :
+    par passage. Lancement :
 
-        python -m evals.run_eval
+        python -m evals.run_eval           # tous les cas (dev + test)
+        python -m evals.run_eval dev       # seulement les cas de réglage
+        python -m evals.run_eval test      # seulement les cas cachés
 
-On obtient un score (ex. 14/15) : un repère chiffré pour savoir si un changement
-améliore ou dégrade le copilote.
+DEV  = cas sur lesquels on RÈGLE le prompt.
+TEST = cas CACHÉS, pour vérifier que le prompt généralise (pas juste mémorisé).
+Un progrès qui monte sur DEV mais pas sur TEST = surapprentissage.
 """
 
 import sys
@@ -22,7 +25,16 @@ from .criteres import evaluer
 _PREFIXES_ERREUR = ("❌", "🚫", "🔎", "⚠️", "⏳", "🌐", "🛑")
 
 
-def main() -> None:
+def _noter_cas(cas: dict):
+    """Lance le copilote sur un cas et renvoie (résultats, message_d_erreur)."""
+    memoire, fiche = Memoire(), Fiche()
+    reponse = assistant.analyser(cas["entree"], memoire, fiche)
+    if reponse.strip().startswith(_PREFIXES_ERREUR):
+        return None, reponse.strip().splitlines()[0]
+    return evaluer(reponse, cas), None
+
+
+def main(split: str = "all") -> None:
     try:
         config.check_config()
     except RuntimeError as e:
@@ -32,46 +44,51 @@ def main() -> None:
     print("=" * 60)
     print("  Cyber-LLM — Évaluation de la qualité (evals)")
     print("=" * 60)
-    print("  ⚠️  Appelle le vrai Claude (coûte quelques centimes).\n")
+    print("  ⚠️  Appelle le vrai Claude (coûte quelques centimes).")
+    print("  DEV = régler le prompt · TEST = cas cachés (généralisation).\n")
 
-    total_ok = 0
-    total = 0
+    cas_choisis = [c for c in CAS if split in ("all", c["split"])]
+    # Pour chaque split : [critères réussis, critères totaux].
+    par_split = {"dev": [0, 0], "test": [0, 0]}
 
-    for cas in CAS:
+    for cas in cas_choisis:
         print("-" * 60)
-        print(f"Cas : {cas['nom']}")
+        print(f"Cas : {cas['nom']}  [{cas['split']}]")
 
-        # Session neuve pour chaque cas -> les cas sont indépendants.
-        memoire, fiche = Memoire(), Fiche()
-        reponse = assistant.analyser(cas["entree"], memoire, fiche)
-
-        # Si l'appel API a échoué, on le signale et on passe au cas suivant.
-        if reponse.strip().startswith(_PREFIXES_ERREUR):
-            print(f"  ⚠️  Appel API échoué : {reponse.strip().splitlines()[0]}")
+        resultats, erreur = _noter_cas(cas)
+        if erreur:
+            print(f"  ⚠️  Appel API échoué : {erreur}")
             print("      (vérifie ta clé / le modèle dans .env)")
             continue
 
-        resultats = evaluer(reponse, cas)
         reussis = sum(1 for ok in resultats.values() if ok)
         for critere, ok in resultats.items():
             print(f"  {'✅' if ok else '❌'} {critere}")
         print(f"  → {reussis}/{len(resultats)}")
 
-        total_ok += reussis
-        total += len(resultats)
+        par_split[cas["split"]][0] += reussis
+        par_split[cas["split"]][1] += len(resultats)
 
     print("=" * 60)
-    if total == 0:
-        print("  Aucun cas évalué (voir les erreurs ci-dessus).")
+    for nom_split in ("dev", "test"):
+        ok, tot = par_split[nom_split]
+        if tot:
+            print(f"  {nom_split.upper():4} : {ok}/{tot}  ({round(100 * ok / tot)} %)")
+    ok_tot = par_split["dev"][0] + par_split["test"][0]
+    tot_tot = par_split["dev"][1] + par_split["test"][1]
+    if tot_tot:
+        print(f"  {'TOTAL':4} : {ok_tot}/{tot_tot}  ({round(100 * ok_tot / tot_tot)} %)")
     else:
-        pourcent = round(100 * total_ok / total)
-        print(f"  SCORE GLOBAL : {total_ok}/{total}  ({pourcent} %)")
+        print("  Aucun cas évalué (voir les erreurs ci-dessus).")
     print("=" * 60)
 
-    # Code de sortie non nul si tout a échoué (utile en automatisation).
-    if total == 0:
-        sys.exit(1)
+    if tot_tot == 0:
+        sys.exit(1)  # utile en automatisation : signale que rien n'a tourné
 
 
 if __name__ == "__main__":
-    main()
+    choix = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if choix not in ("all", "dev", "test"):
+        print("Usage : python -m evals.run_eval [all|dev|test]")
+        sys.exit(2)
+    main(choix)
