@@ -133,10 +133,16 @@ Les tests vérifient automatiquement la « tuyauterie » du projet (mémoire, fi
 sauvegarde…). Ils **ne contactent jamais l'API** (l'appel LLM est simulé) : ils
 sont gratuits, instantanés et déterministes.
 
+**Avec l'environnement virtuel activé** (l'invite affiche `(.venv)`) :
+
 ```bash
-pip install -r requirements-dev.txt
+pip install -r requirements-dev.txt   # installe pytest dans le venv
 pytest
 ```
+
+> Si `pytest` renvoie `No module named 'anthropic'`, c'est que le venv n'est pas
+> activé : les dépendances vivent dans le venv, pas dans le Python global.
+> Active-le d'abord (`.venv\Scripts\Activate.ps1` sous Windows) puis réessaie.
 
 ---
 
