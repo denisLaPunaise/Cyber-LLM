@@ -15,6 +15,9 @@ env/
 # ── Fiches machine sauvegardées (personnelles, par box) ────
 sessions/
 
+# ── Rapports d'évaluation générés ──────────────────────────
+evals/resultats/
+
 # ── Éditeurs / OS ──────────────────────────────────────────
 .vscode/
 .idea/
