@@ -149,8 +149,12 @@ pytest
 ## Évaluation de la qualité (evals)
 
 Les *evals* mesurent la **qualité des réponses de l'IA** (pas le code) : on lance
-le copilote sur 8 cas types et on note chaque réponse selon des critères
-(format respecté, faits clés repris, **rien de destructif**, réponse actionnable).
+le copilote sur 8 cas types et on note chaque réponse sur **deux niveaux** :
+
+- **critères mécaniques** (par du code) : format respecté, faits clés repris,
+  **rien de destructif**, réponse actionnable ;
+- **LLM-juge** (optionnel, un 2ᵉ appel à Claude) : pertinence, absence
+  d'hallucination, priorisation — plus fin, plus dur à tricher qu'un mot-clé.
 
 Les cas sont répartis en **`dev`** (pour régler le prompt) et **`test`** (cas
 **cachés**, pour vérifier que le prompt généralise au lieu d'« apprendre par
@@ -160,12 +164,14 @@ Contrairement aux tests, les evals **appellent le vrai Claude** (quelques centim
 par passage) :
 
 ```bash
-python -m evals.run_eval        # tous les cas (dev + test)
-python -m evals.run_eval dev    # seulement les cas de réglage
+python -m evals.run_eval             # critères mécaniques, dev + test
+python -m evals.run_eval dev         # seulement les cas de réglage
+python -m evals.run_eval all --juge  # + LLM-juge (un appel de plus par cas)
 ```
 
-Le rapport donne un score **dev** et un score **test** séparés : un progrès qui
-monte sur `dev` mais pas sur `test`, c'est du surapprentissage.
+Le rapport donne des scores **dev** et **test** séparés (un progrès qui monte sur
+`dev` mais pas sur `test` = surapprentissage), et un **rapport détaillé** avec les
+réponses complètes est écrit dans `evals/resultats/` pour la relecture humaine.
 
 ---
 
