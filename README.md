@@ -7,9 +7,10 @@ les étapes suivantes en s'appuyant sur la méthodologie de pentest.
 **Ce n'est pas un outil qui attaque tout seul.** C'est un copilote : tu gardes
 toujours la décision et tu exécutes toi-même les commandes.
 
-> ✅ **Statut : V1 fonctionnelle.** Colle une sortie de commande → reçois des
-> pistes priorisées avec les commandes. L'assistant **se souvient** de la
-> machine en cours pendant toute la session.
+> ✅ **Statut : V3 fonctionnelle.** Colle une sortie de commande → reçois des
+> pistes priorisées. L'assistant **se souvient** de la machine, tient une
+> **fiche** à jour, et peut (en mode `auto`) **exécuter les commandes de recon
+> après ta validation**.
 
 ---
 
@@ -25,7 +26,9 @@ Règles intégrées au projet :
 
 - ✅ **Validation humaine obligatoire** avant toute action offensive.
 - ✅ **Rien de destructif** en automatique.
-- ✅ L'assistant **propose**, il **n'exécute pas** à ta place (pour l'instant).
+- ✅ L'assistant **propose**. En mode `auto`, il peut exécuter des commandes de
+  recon **en lecture seule** (liste blanche), mais **seulement après ta
+  validation explicite** — jamais sans ton accord, et jamais rien de destructif.
 
 L'utilisation contre des systèmes sans autorisation est illégale et sort
 totalement du cadre de ce projet.
@@ -119,11 +122,35 @@ machine** à jour (IP, ports, services, identifiants, accès).
 - `fiche` — affiche l'état structuré de la machine à tout moment.
 - `sauver [nom]` — sauvegarde la fiche (ex. `sauver blue`).
 - `charger [nom]` — recharge une fiche sauvegardée pour reprendre une box.
+- `auto` — (dé)active l'exécution assistée (voir ci-dessous).
 - `nouvelle` — efface la mémoire et la fiche pour repartir de zéro.
 - `help` — affiche l'aide et la liste des commandes.
 - `quit` — quitter.
 
 Les fiches sauvegardées vont dans le dossier `sessions/` (ignoré par git).
+
+---
+
+## Exécution assistée (mode `auto`)
+
+Par défaut, **tu** lances les commandes. Avec la commande `auto`, l'outil peut
+lancer **lui-même** les commandes de **recon en lecture seule** (pour éviter les
+copier-coller) — mais toujours **après ta validation** (`o/N`).
+
+- **Liste blanche** : seules des commandes de recon connues sont exécutables
+  (`nmap`, `enum4linux`, `smbmap`, `dig`, `whatweb`, `gobuster`, `ffuf`,
+  `nikto`…). Tout le reste (exploitation, destructif, hors liste) reste **manuel**.
+- **Garde-fous** : refus de tout chaînage shell (`;`, `|`, `>`…), blocage des
+  motifs destructifs, exécution **sans shell** (anti-injection) avec timeout.
+- **Ton accord est obligatoire** : rien ne tourne sans ton `o`.
+
+```bash
+python -m src.cli --auto   # démarre avec l'exécution assistée activée
+# ... ou taper `auto` à tout moment pour l'activer / la couper.
+```
+
+À lancer sur la machine qui a les outils (ex. ta VM Kali) ; l'exécution est
+pensée pour Linux.
 
 ---
 
@@ -186,7 +213,9 @@ réponses complètes est écrit dans `evals/resultats/` pour la relecture humain
   services, identifiants, accès).
   - ✅ Étape 1 : l'assistant tient la fiche à jour, consultable via `fiche`.
   - ✅ Étape 2 : `sauver` / `charger` pour reprendre une box plus tard.
-- **V3** — exécution assistée de commandes en lecture seule, avec validation humaine.
+- **V3** ✅ *(terminée)* — exécution assistée : en mode `auto`, l'outil lance les
+  commandes de recon **en lecture seule** (liste blanche) **après validation**,
+  sans shell (anti-injection). Tout le reste reste manuel.
 
 Plan détaillé de la V0 : [`docs/plan-v0.md`](docs/plan-v0.md).
 
